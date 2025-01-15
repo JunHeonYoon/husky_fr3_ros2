@@ -1,0 +1,31 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: husky_fr3_description
+    relative_path: urdf/husky_fr3.urdf.xacro
+  srdf:
+    relative_path: config/husky_fr3.srdf
+  package_settings:
+    author_name: YoonJunHeon
+    author_email: yoonjh98@snu.ac.kr
+    generated_timestamp: 1736867749
+  control_xacro:
+    command:
+      - position
+      - velocity
+      - effort
+    state:
+      - position
+      - velocity
+      - effort
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+      - velocity
+      - effort
+    state:
+      - position
+      - velocity
+      - effort

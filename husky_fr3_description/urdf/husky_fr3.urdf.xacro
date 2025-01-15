@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="husky_fr3">
+
+  <xacro:arg name="arm_id" default="fr3" />
+  <xacro:arg name="hand" default="true" />
+  <xacro:arg name="mobile_base" default="true" />
+
+  <xacro:if value="$(arg mobile_base)">
+    <xacro:include filename="$(find clearpath_platform_description)/urdf/a200/a200.urdf.xacro" />
+    <xacro:a200 />
+    <link name="top_structure_link">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://husky_fr3_description/meshes/roas_dyros.stl"/>
+        </geometry>
+        <material name="medium_grey">
+          <color rgba="0.6 0.6 0.6 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin rpy="0 0 0" xyz="-0.2 0 0.85"/>
+        <geometry>
+          <box size="0.38992 0.56 1.365"/>
+        </geometry>
+        <inertial>
+          <origin rpy="0 0 0" xyz="-0.2 0 0.45"/>
+          <mass value="40"/>
+          <inertia ixx="1.95397859e-01" ixy="7.23330468e-08" ixz="2.01114568e-02" iyy="1.92679403e-01" iyz="-7.81325404e-05" izz="1.01958752e-01"/>
+        </inertial>
+      </collision>
+    </link>
+    <joint name="top_structure_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="top_structure_link"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
+  </xacro:if>
+  <xacro:unless value="$(arg mobile_base)">
+    <link name="base_link"/>
+  </xacro:unless>
+
+  <!-- For Azure Kinect -->
+  <!-- <link name="kinect_suppot_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://husky_panda_description/meshes/Azure_Kinect_suppoter.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="medium_grey">
+        <color rgba="0.6 0.6 0.6 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="kinect_support_joint" type="fixed">
+    <parent link="top_structure_link"/>
+    <child link="kinect_suppot_link"/>
+    <origin rpy="2.1817 0 1.5708" xyz="-0.0892 0.0 1.3723"/>
+  </joint> -->
+
+  <xacro:include filename="$(find husky_fr3_description)/urdf/azure_kinect.urdf.xacro" />
+  <xacro:azure_kinect is_reverse="true" />
+  <!-- <joint name="kinect_joint" type="fixed">
+    <parent link="kinect_suppot_link"/>
+    <child link="camera_base"/>
+    <origin rpy="0 -1.5707963 -1.5707963" xyz="0 0 0.0259"/>
+  </joint> -->
+
+  <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
+  <xacro:franka_robot arm_id="$(arg arm_id)"
+                      joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
+                      inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')}"
+                      kinematics="${xacro.load_yaml('$(find franka_description)/robots/fr3/kinematics.yaml')}"
+                      dynamics="${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')}"
+                      gazebo="false"
+                      hand="$(arg hand)"
+                      with_sc="false"
+                      ros2_control="false"
+                      arm_prefix= ""
+                      connected_to= "fr3_base">
+  </xacro:franka_robot>
+  <xacro:property name="arm_prefix_modified" value='' />
+  <xacro:if value="$(arg hand)">
+      <xacro:include filename="$(find franka_description)/end_effectors/common/franka_hand.xacro"/>
+      <xacro:include filename="$(find franka_description)/end_effectors/common/utils.xacro" />
+      <xacro:include filename="$(find franka_description)/end_effectors/franka_hand/franka_hand_arguments.xacro" />
+      <xacro:franka_hand
+        connected_to="$(arg arm_id)_link8"
+        arm_id="$(arg arm_id)"
+        arm_prefix=""
+        ee_id="franka_hand_white"
+        ee_inertials="${xacro.load_yaml('$(find franka_description)/end_effectors/franka_hand/inertials.yaml')}"
+        rpy_ee="0 0 ${-pi/4}"
+        safety_distance="0.03"
+        gazebo="false"
+        with_sc="false"
+      />
+  </xacro:if>
+
+  <joint name="husky_fr3_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="fr3_base"/>
+        <xacro:if value="$(arg mobile_base)">
+          <origin rpy="0 0 0" xyz="0.36 0.0 0.256"/>
+        </xacro:if>
+        <xacro:unless value="$(arg mobile_base)">
+          <origin rpy="0 0 0" xyz="0 0 0"/>
+        </xacro:unless>
+      </joint>
+
+  <!--rgb camera link to panda_link0
+   [[-0.04882053 -0.63533808  0.77068936 -0.51619329]
+    [-0.99871549  0.04152894 -0.02902973 -0.05741105]
+    [-0.01356222 -0.77111664 -0.63654944  1.10626562]
+    [ 0.          0.          0.          1.        ]] -->
+  <joint name="kinect_joint" type="fixed">
+    <parent link="$(arg arm_id)_link0"/>
+    <child link="rgb_camera_link"/>
+    <origin rpy="-2.2608881 0.0135627 -1.6196408" xyz="-0.51619329 -0.05741105 1.10626562"/>
+  </joint>
+
+</robot>
