@@ -12,15 +12,19 @@ from moveit_configs_utils import MoveItConfigsBuilder
 
 def generate_launch_description():
     moveit_config = (
-        MoveItConfigsBuilder(
-            robot_name="husky_fr3", package_name="husky_fr3_moveit_config"
+        MoveItConfigsBuilder("husky_fr3")
+        .robot_description(
+            file_path="config/husky_fr3.urdf.xacro",
         )
-        .robot_description(file_path="config/husky_fr3.urdf.xacro")
+        .robot_description_semantic(file_path="config/husky_fr3.srdf")
+        .planning_scene_monitor(
+            publish_robot_description=True, publish_robot_description_semantic=True
+        )
         .trajectory_execution(file_path="config/moveit_controllers.yaml")
-        .moveit_cpp(
-            file_path=get_package_share_directory("husky_fr3_moveit_config")
-            + "/config/moveit_py.yaml"
+        .planning_pipelines(
+            pipelines=["ompl", "chomp", "pilz_industrial_motion_planner", "stomp"]
         )
+        
         .to_moveit_configs()
     )
 
@@ -39,6 +43,9 @@ def generate_launch_description():
         parameters=[
             moveit_config.robot_description,
             moveit_config.robot_description_semantic,
+            moveit_config.planning_pipelines,
+            moveit_config.robot_description_kinematics,
+            moveit_config.joint_limits,
         ],
     )
 
@@ -58,41 +65,12 @@ def generate_launch_description():
         parameters=[moveit_config.robot_description],
     )
 
-    ros2_controllers_path = os.path.join(
-        get_package_share_directory("husky_fr3_moveit_config"),
-        "config",
-        "ros2_controllers.yaml",
-    )
-    ros2_control_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        parameters=[ros2_controllers_path],
-        remappings=[
-            ("/controller_manager/robot_description", "/robot_description"),
-        ],
-        output="log",
-    )
-
-    load_controllers = []
-    for controller in [
-        "fr3_controller",
-        "franka_hand_controller",
-        "joint_state_broadcaster",
-    ]:
-        load_controllers += [
-            ExecuteProcess(
-                cmd=["ros2 run controller_manager spawner {}".format(controller)],
-                shell=True,
-                output="log",
-            )
-        ]
 
     return LaunchDescription(
         [
             robot_state_publisher,
-            ros2_control_node,
             rviz_node,
             static_tf,
         ]
-        + load_controllers
+
     )
