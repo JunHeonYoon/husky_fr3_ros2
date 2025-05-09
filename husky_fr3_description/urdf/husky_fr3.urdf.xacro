@@ -101,12 +101,12 @@
   <joint name="husky_fr3_joint" type="fixed">
         <parent link="base_link"/>
         <child link="fr3_base"/>
-        <xacro:if value="$(arg mobile_base)">
+        <!-- <xacro:if value="$(arg mobile_base)"> -->
           <origin rpy="0 0 0" xyz="0.36 0.0 0.256"/>
-        </xacro:if>
-        <xacro:unless value="$(arg mobile_base)">
-          <origin rpy="0 0 0" xyz="0 0 0"/>
-        </xacro:unless>
+        <!-- </xacro:if> -->
+        <!-- <xacro:unless value="$(arg mobile_base)"> -->
+          <!-- <origin rpy="0 0 0" xyz="0 0 0"/> -->
+        <!-- </xacro:unless> -->
       </joint>
 
   <!--rgb camera link to panda_link0
