@@ -52,8 +52,8 @@ def launch_setup(context, *args, **kwargs):
     robot_state_pub = Node(
         package="robot_state_publisher", executable="robot_state_publisher",
         name="robot_state_publisher", output="log",
-        parameters=[moveit_config.robot_description,      # URDF
-                    {"publish_frequency": 500.0},         # ★ 주기 상향
+        parameters=[moveit_config.robot_description,
+                    {"publish_frequency": 500.0},
                     {"ignore_timestamp": True},
                     ],
     )
